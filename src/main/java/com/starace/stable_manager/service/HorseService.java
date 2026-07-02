@@ -1,35 +1,60 @@
 package com.starace.stable_manager.service;
 
+import com.starace.stable_manager.repository.UserRepository;
 import java.time.LocalDate;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import com.starace.stable_manager.dto.HorseRequest;
 import com.starace.stable_manager.model.Horse;
+import com.starace.stable_manager.model.User;
 import com.starace.stable_manager.repository.HorseRepository;
 
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class HorseService {
-    @Autowired
-    private HorseRepository horseRepository;
 
-    public Horse saveHorse(Horse horse) {
+    private final UserRepository userRepository;
+
+    private final HorseRepository horseRepository;
+
+    // HorseService(UserRepository userRepository) {
+    //     this.userRepository = userRepository;
+    // }
+
+    public Horse saveHorse(HorseRequest request) {
+        Horse horse = new Horse();
+        horse.setName(request.getName());
+        horse.setBreed(request.getBreed());
+        horse.setBirthYear(request.getBirthYear());
+        horse.setNickname(request.getNickname());
+        horse.setMicrochipId(request.getMicrochipId());
+        horse.setIsMdBred(request.getIsMdBred());
+        horse.setFoalingState(request.getFoalingState());
+        horse.setLastCogginDate(request.getLastCogginDate());
+        horse.setLastFarrierDate(request.getLastFarrierDate());
+        horse.setMedicalNotes(request.getMedicalNotes());
+        horse.setUser(getCurrentUser());
         checkHealthAlerts(horse);
         return horseRepository.save(horse);
     }
 
     public List<Horse> getAllHorses() {
-        List<Horse> horses = horseRepository.findAll();
+        User currentUser = getCurrentUser();
+        List<Horse> horses = horseRepository.findByUserId(currentUser.getId());
 
         horses.forEach(this::checkHealthAlerts); // check each horses need for something
         return horses;
     }
 
     public Horse getHorseById(Long id) {
-        return horseRepository.findById(id)
+        User currentUser = getCurrentUser();
+        return horseRepository.findByIdAndUserId(id, currentUser.getId())
             .orElseThrow(() -> new EntityNotFoundException("Horse not found with id: " + id));
     }
 
@@ -55,8 +80,9 @@ public class HorseService {
         return currentYear - horse.getBirthYear();
     }
 
-    public Horse updateHorse(Long id, Horse horseDetails) {
-        return horseRepository.findById(id).map(horse -> {
+    public Horse updateHorse(Long id, HorseRequest horseDetails) {
+        User currentUser = getCurrentUser();
+        return horseRepository.findByIdAndUserId(id, currentUser.getId()).map(horse -> {
             if(horseDetails.getName() != null) horse.setName(horseDetails.getName());
             if(horseDetails.getBreed() != null) horse.setBreed(horseDetails.getBreed());
             if(horseDetails.getBirthYear() != null) horse.setBirthYear(horseDetails.getBirthYear());
@@ -74,9 +100,19 @@ public class HorseService {
     }
 
     public void deleteHorse(Long id) {
-        if(!horseRepository.existsById(id)) {
+        User currentUser = getCurrentUser();
+        if(!horseRepository.findByIdAndUserId(id, currentUser.getId()).isPresent()) {
             throw new RuntimeException("Cannot delete. Horse not found with id: " + id);
         }
         horseRepository.deleteById(id);
+    }
+
+    private User getCurrentUser() {
+        String username = SecurityContextHolder.getContext()
+            .getAuthentication()
+            .getName();
+
+        return userRepository.findByUsername(username)
+            .orElseThrow(() -> new RuntimeException("User not found"));
     }
 }

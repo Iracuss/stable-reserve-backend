@@ -17,6 +17,13 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
 
     public void register(RegisterRequest request) {
+        if(userRepository.findByUsername(request.getUsername()).isPresent()) {
+            throw new RuntimeException("Username already taken");
+        }
+        if(userRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new RuntimeException("Email already taken");
+        }
+
         User user = new User();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());

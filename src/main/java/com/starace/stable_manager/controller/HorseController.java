@@ -2,12 +2,14 @@ package com.starace.stable_manager.controller;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.starace.stable_manager.dto.HorseRequest;
 import com.starace.stable_manager.model.Horse;
 import com.starace.stable_manager.service.HorseService;
+
+import lombok.AllArgsConstructor;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,13 +18,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-
 @RestController
 @RequestMapping("/api/horses")
+@AllArgsConstructor
 public class HorseController {
 
-    @Autowired
-    private HorseService horseService;
+    private final HorseService horseService;
 
     @GetMapping
     public List<Horse> getAllHorses() {
@@ -35,12 +36,12 @@ public class HorseController {
     }
 
     @PostMapping
-    public Horse createHorse(@RequestBody Horse horse) {        
+    public Horse createHorse(@RequestBody HorseRequest horse) {        
         return horseService.saveHorse(horse);
     }
     
     @PutMapping("/{id}")
-    public Horse updateHorse(@PathVariable Long id, @RequestBody Horse horseDetails) {
+    public Horse updateHorse(@PathVariable Long id, @RequestBody HorseRequest horseDetails) {
         return horseService.updateHorse(id, horseDetails);
     }
 
