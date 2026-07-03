@@ -1,12 +1,19 @@
 package com.starace.stable_manager.service;
 
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.starace.stable_manager.dto.LoginRequest;
 import com.starace.stable_manager.dto.RegisterRequest;
 import com.starace.stable_manager.enums.Role;
 import com.starace.stable_manager.model.User;
 import com.starace.stable_manager.repository.UserRepository;
+import com.starace.stable_manager.security.JwtService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -15,6 +22,8 @@ import lombok.RequiredArgsConstructor;
 public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
 
     public void register(RegisterRequest request) {
         if(userRepository.findByUsername(request.getUsername()).isPresent()) {
@@ -30,5 +39,20 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(Role.USER);
         userRepository.save(user);
+    }
+
+    public String login(LoginRequest request) {
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                    request.getUsername(),
+                    request.getPassword())
+            );
+
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            return jwtService.generateToken(userDetails);
+        } catch(BadCredentialsException e) {
+            throw new RuntimeException("Invalid username or password");
+        }
     }
 }
