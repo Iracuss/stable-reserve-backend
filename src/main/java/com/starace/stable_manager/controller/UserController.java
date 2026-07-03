@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.starace.stable_manager.dto.UserRequest;
+import com.starace.stable_manager.dto.UserResponse;
 import com.starace.stable_manager.model.User;
 import com.starace.stable_manager.service.UserService;
 
@@ -33,12 +34,12 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<User> getMyAccount() {
+    public ResponseEntity<UserResponse> getMyAccount() {
         return ResponseEntity.ok(userService.getMyAccount());
     }
 
     @PutMapping("/me")
-    public ResponseEntity<User> updateAccount(@RequestBody UserRequest request) {
+    public ResponseEntity<UserResponse> updateAccount(@RequestBody UserRequest request) {
         return ResponseEntity.ok(userService.updateAccount(request));
     }
 

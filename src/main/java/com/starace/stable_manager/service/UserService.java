@@ -6,6 +6,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.starace.stable_manager.dto.UserRequest;
+import com.starace.stable_manager.dto.UserResponse;
 import com.starace.stable_manager.enums.Role;
 import com.starace.stable_manager.model.User;
 import com.starace.stable_manager.repository.UserRepository;
@@ -36,26 +37,31 @@ public class UserService {
         throw new RuntimeException("Access denied");
     }
 
-    public User getMyAccount() {
-        User user = getCurrentUser();
-        return user;
+    public UserResponse getMyAccount() {
+        User currentUser = getCurrentUser();
+        UserResponse response = new UserResponse();
+        response.setId(currentUser.getId());
+        response.setEmail(currentUser.getEmail());
+        response.setUsername(currentUser.getUsername());
+        response.setRole(currentUser.getRole());
+        return response;
     }
 
     // Going to skip password on purpose right now
-    public User updateAccount(UserRequest request) {
+    public UserResponse updateAccount(UserRequest request) {
         User currentUser = getCurrentUser();
 
-        return userRepository.findById(currentUser.getId()).map(user -> {
-            if(request.getEmail() != null) user.setEmail(request.getEmail());
-            if(request.getUsername() != null) user.setUsername(request.getUsername());
+        if(request.getEmail() != null) currentUser.setEmail(request.getEmail());
+        if(request.getUsername() != null) currentUser.setUsername(request.getUsername());
 
-            user.setId(currentUser.getId());
-            user.setPassword(currentUser.getPassword());
-            user.setRole(currentUser.getRole());
-            user.setHorses(currentUser.getHorses());
+        User savedUser = userRepository.save(currentUser);
 
-            return userRepository.save(user);
-        }).orElseThrow(() -> new RuntimeException("User not found."));
+        UserResponse response = new UserResponse();
+        response.setId(savedUser.getId());
+        response.setEmail(savedUser.getEmail());
+        response.setUsername(savedUser.getUsername());
+        response.setRole(savedUser.getRole());
+        return response;
     }
 
     public void deleteUser(Long id) {
@@ -63,7 +69,7 @@ public class UserService {
 
         if(!userRepository.existsById(id)){
             throw new RuntimeException("Cannot delete. User not found with id: " + id);
-        } else if(currentUser.getId() != id) {
+        } else if(!currentUser.getId().equals(id)) {
             throw new RuntimeException("Cannot delete. Current user doesn't match given user");
         }
  
