@@ -4,7 +4,6 @@ import com.starace.stable_manager.repository.UserRepository;
 import java.time.LocalDate;
 import java.util.List;
 
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -53,7 +52,6 @@ public class HorseService {
             .orElseThrow(() -> new EntityNotFoundException("Horse not found with id: " + id));
     }
 
-    @Scheduled(cron = "@midnight")
     public void checkHealthAlerts(Horse horse) {
         if(horse.getLastCogginDate() != null) {
             if(horse.getLastCogginDate().isBefore(LocalDate.now().minusYears(1))) {
