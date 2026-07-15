@@ -34,8 +34,16 @@ public class EmailService {
         mailSender.send(message);
     }
 
+    @Async
     public void sendPasswordResetEmail(String to, String resetLink) {
+        SimpleMailMessage message = new SimpleMailMessage();
 
+        message.setFrom(senderEmail);
+        message.setTo(to);
+        message.setSubject("Reset your password");
+        message.setText("Link to reset your password:\n" + resetLink);
+
+        mailSender.send(message);
     }
 
     private String formatOverdueEmail(List<HorseAlert> alertMessage) {

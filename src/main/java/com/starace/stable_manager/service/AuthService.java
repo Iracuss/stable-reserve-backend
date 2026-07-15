@@ -1,5 +1,6 @@
 package com.starace.stable_manager.service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -15,8 +16,11 @@ import org.springframework.stereotype.Service;
 import com.starace.stable_manager.dto.ForgotPasswordRequest;
 import com.starace.stable_manager.dto.LoginRequest;
 import com.starace.stable_manager.dto.RegisterRequest;
+import com.starace.stable_manager.dto.ResetPasswordRequest;
 import com.starace.stable_manager.enums.Role;
+import com.starace.stable_manager.model.PasswordResetToken;
 import com.starace.stable_manager.model.User;
+import com.starace.stable_manager.repository.PasswordResetTokenRepository;
 import com.starace.stable_manager.repository.UserRepository;
 import com.starace.stable_manager.security.JwtService;
 
@@ -30,6 +34,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final EmailService emailService;
+    private final PasswordResetTokenRepository tokenRepository;
 
     @Value("${frontend.url}")
     private String frontendUrl;
@@ -50,7 +55,7 @@ public class AuthService {
         userRepository.save(user);
     }
 
-    // Need to work on this but this should be fine for now
+    // The send email one
     public void forgotPassword(ForgotPasswordRequest request) {
         Optional<User> userOptional = userRepository.findByEmail(request.getEmail());
 
@@ -63,14 +68,35 @@ public class AuthService {
 
         String token = UUID.randomUUID().toString();
 
+        PasswordResetToken resetToken = new PasswordResetToken(token, user);
+        tokenRepository.save(resetToken);
+
         String resetLink = frontendUrl + "/reset-password?token=" + token;
 
         emailService.sendPasswordResetEmail(user.getEmail(), resetLink);
     }
 
-    // Need Password reset function
-    public void changePassword() {
+    // The password reset function
+    public void resetPassword(ResetPasswordRequest request) {
+        Optional<PasswordResetToken> tokenOptional = tokenRepository.findByToken(request.getToken());
 
+        if(tokenOptional.isEmpty()) {
+            throw new RuntimeException("Invalid token");
+        }
+
+        PasswordResetToken resetToken = tokenOptional.get();
+
+        if(resetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+            tokenRepository.delete(resetToken);
+            throw new RuntimeException("Token has expired");
+        }
+
+        User user = resetToken.getUser();
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        tokenRepository.delete(resetToken);
     }
 
     public String login(LoginRequest request) {
