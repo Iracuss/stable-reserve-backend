@@ -7,4 +7,4 @@ FROM eclipse-temurin:21-jdk
 WORKDIR /app
 COPY --from=build /app/target/stable-manager-0.0.1-SNAPSHOT.jar stable-manager.jar
 EXPOSE 8080
-ENTRYPOINT ["java","-jar","stable-manager.jar"]
+ENTRYPOINT ["java","-jar","stable-manager.jar","--spring.profiles.active=prod"]
