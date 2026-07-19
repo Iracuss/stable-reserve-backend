@@ -36,7 +36,7 @@ public class MembershipService {
     }
 
     // Creating through creation of stable
-    public Membership createMembership(Long stableId) {
+    public Membership createOwnerMembership(Long stableId) {
         User currentUser = currentUserService.getCurrentUser();
         Membership membership = new Membership();
         Optional<Stable> optStable = stableRepository.findById(stableId);
@@ -59,22 +59,55 @@ public class MembershipService {
     }
 
     // Accepting the invite route (Sent email)
-    public Membership createJoinedMembership(MembershipRequest request) {
-        User currentUser = currentUserService.getCurrentUser();
-        Membership membership = new Membership();
-        membership.setUser(currentUser);
-        membership.setAcceptedInvite(true);
-        // membership.setStable(); how do I get this?
-        membership.setJoinedAt(LocalDateTime.now());
-        membership.setMembershipRole(MembershipRole.STAFF);
-        membership.setInvitedBy(null);
-        // Not finished
+    // public Membership createJoinedMembership(MembershipRequest request) {
+    //     User currentUser = currentUserService.getCurrentUser();
+    //     Membership membership = new Membership();
+    //     membership.setUser(currentUser);
+    //     membership.setAcceptedInvite(true);
+    //     // membership.setStable(); how do I get this?
+    //     membership.setJoinedAt(LocalDateTime.now());
+    //     membership.setMembershipRole(MembershipRole.STAFF);
+    //     membership.setInvitedBy(null);
+    //     // Not finished
 
-        return membershipRepository.save(membership);
-    }
+    //     return membershipRepository.save(membership);
+    // }
 
     public void deleteMembership(Long membershipId) {
         membershipRepository.deleteById(membershipId);
+    }
+
+    public boolean checkMembershipStatus(Long stableId) {
+        Long currentUserId = currentUserService.getCurrentUser().getId();
+
+        Optional<Membership> optMembership = membershipRepository.findByUserIdAndStableId(stableId, currentUserId);
+
+        // Maybe throw an error and not a false?
+        if(optMembership.isEmpty()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public boolean checkEditMembershipStatus(Long stableId) {
+        Long currentUserId = currentUserService.getCurrentUser().getId();
+
+        Optional<Membership> optMembership = membershipRepository.findByUserIdAndStableId(stableId, currentUserId);
+
+        // Maybe throw an error and not a false?
+        if(optMembership.isEmpty()) {
+            return false;
+        }
+
+        Membership membership = optMembership.get();
+        MembershipRole role = membership.getMembershipRole();
+
+        if(role != MembershipRole.MANAGER || role != MembershipRole.OWNER) {
+            return false;
+        }
+
+        return true;
     }
     
 }

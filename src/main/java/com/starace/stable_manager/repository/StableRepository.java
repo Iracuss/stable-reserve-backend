@@ -6,8 +6,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.starace.stable_manager.model.Stable;
+import java.util.List;
+import com.starace.stable_manager.model.Membership;
+
 
 @Repository
 public interface StableRepository extends JpaRepository<Stable, Long> {
     Optional<Stable> findById(Long id);
+    List<Stable> findByMemberships(List<Membership> memberships);
 }
