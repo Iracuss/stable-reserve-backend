@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import com.starace.stable_manager.enums.MembershipRole;
 import com.starace.stable_manager.model.Membership;
 import com.starace.stable_manager.model.Stable;
 import com.starace.stable_manager.model.User;
@@ -17,4 +18,5 @@ public interface MembershipRepository extends JpaRepository<Membership, Long>{
 
     List<Membership> findByUser(User user);
     List<Membership> findByUserId(Long userId);
+    Optional<Membership> findByStableIdAndMembershipRole(Long stableId, MembershipRole membershipRole);
 }

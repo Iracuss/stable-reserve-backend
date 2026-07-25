@@ -9,4 +9,8 @@ public class StableResponse {
     private Long id;
     private String name;
     private StablePreferences preferences;
+    private String ownerUsername;
+    private int memberCount;
+    private int horseCount;
+    private String currentUserRole;
 }

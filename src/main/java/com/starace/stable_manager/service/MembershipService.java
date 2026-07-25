@@ -62,6 +62,13 @@ public class MembershipService {
         membershipRepository.deleteById(membershipId);
     }
 
+    public String getStableOwnerUsername(Long stableId) {
+        return membershipRepository
+            .findByStableIdAndMembershipRole(stableId, MembershipRole.OWNER)
+            .map(membership -> membership.getUser().getUsername())
+            .orElse("Unknown Owner"); 
+    }
+
     public boolean checkMembershipStatus(Long stableId) {
         Long currentUserId = currentUserService.getCurrentUser().getId();
 

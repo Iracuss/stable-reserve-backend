@@ -20,6 +20,21 @@ public class StableService {
     private final StableRepository stableRepository;
     private final MembershipService membershipService;
 
+    private StableResponse mapToResponse(Stable stable) {
+        StableResponse response = new StableResponse();
+        response.setId(stable.getId());
+        response.setName(stable.getName());
+        response.setPreferences(stable.getPreferences());
+        
+        String ownerName = membershipService.getStableOwnerUsername(stable.getId());
+        response.setOwnerUsername(ownerName);
+
+        response.setMemberCount(stable.getMemberships().size());
+        response.setHorseCount(stable.getHorses().size());
+        
+        return response;
+    }
+
     public StableResponse getStableById(Long stableId) {
         Optional<Stable> optStable = stableRepository.findById(stableId);
 
@@ -34,11 +49,11 @@ public class StableService {
 
         Stable stable = optStable.get();
 
-        StableResponse response = new StableResponse();
-        response.setId(stableId);
-        response.setName(stable.getName());
-        response.setPreferences(stable.getPreferences());
+        Membership userMembership = membershipService.getUserMembership(stableId);
 
+        StableResponse response = mapToResponse(stable);
+        response.setCurrentUserRole(userMembership.getMembershipRole().name());
+        
         return response;
     }
 
@@ -48,10 +63,8 @@ public class StableService {
         for(Membership membership : membershipService.getAllUserMemberships()) {
             Stable stable = membership.getStable();
 
-            StableResponse response = new StableResponse();
-            response.setId(stable.getId());
-            response.setName(stable.getName());
-            response.setPreferences(stable.getPreferences());
+            StableResponse response = mapToResponse(stable);
+            response.setCurrentUserRole(membership.getMembershipRole().name());
 
             responses.add(response);
         }
@@ -68,12 +81,7 @@ public class StableService {
         // Create OWNER membership
         membershipService.createOwnerMembership(savedStable.getId());
 
-        StableResponse response = new StableResponse();
-        response.setId(savedStable.getId());
-        response.setName(savedStable.getName());
-        response.setPreferences(savedStable.getPreferences());
-
-        return response;
+        return mapToResponse(savedStable);
     }
 
     public StableResponse updateStable(Long stableId, StableRequest request) {
@@ -93,13 +101,9 @@ public class StableService {
         if(request.getName() != null) stable.setName(request.getName());
         if(request.getPreferences() != null) stable.setPreferences(request.getPreferences());
 
-        StableResponse response = new StableResponse();
-        response.setId(stable.getId());
-        response.setName(stable.getName());
-        response.setPreferences(stable.getPreferences());
-        stableRepository.save(stable);
+        Stable updatedStable = stableRepository.save(stable);
 
-        return response;
+        return mapToResponse(updatedStable);
     }
 
     public void deleteStable(Long stableId) {
