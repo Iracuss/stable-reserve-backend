@@ -2,6 +2,7 @@ package com.starace.stable_manager.service;
 
 import com.starace.stable_manager.security.JwtService;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
@@ -68,4 +69,7 @@ public class UserService {
         userRepository.delete(currentUser);
     }
     
+    public Optional<User> findUserByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
 }

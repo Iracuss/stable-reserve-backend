@@ -22,6 +22,33 @@ public class MembershipService {
     private final MembershipRepository membershipRepository;
     private final StableRepository stableRepository;
 
+    public void deleteMembership(Long userId, Long stableId) {
+        Optional<Membership> optMembership = membershipRepository.findByUserIdAndStableId(userId, stableId);
+
+        if(optMembership.isEmpty()) {
+            throw new RuntimeException("Membership does not exist");
+        }
+        
+        Membership membership = optMembership.get();
+
+        membershipRepository.delete(membership);
+    }
+
+    public void updateAcceptMembership(Long userId, Long stableId) {
+        Optional<Membership> optMembership = membershipRepository.findByUserIdAndStableId(userId, stableId);
+
+        if(optMembership.isEmpty()) {
+            throw new RuntimeException("Membership does not exist");
+        }
+        
+        Membership membership = optMembership.get();
+
+        membership.setJoinedAt(LocalDateTime.now());
+        membership.setAcceptedInvite(true);
+
+        membershipRepository.save(membership);
+    }
+
     public Membership getUserMembership(Long stableId) {
         User currentUser = currentUserService.getCurrentUser();
         return membershipRepository
@@ -57,6 +84,21 @@ public class MembershipService {
         return membershipRepository.save(membership);
     }
 
+    public Membership createJoinMembership(Stable stable, User sendTo, MembershipRole role) {
+        User currentUser = currentUserService.getCurrentUser();
+        Membership membership = new Membership();
+
+        membership.setUser(sendTo);
+        membership.setStable(stable);
+        membership.setInvitedBy(currentUser.getId());
+        membership.setAcceptedInvite(false);
+        membership.setMembershipRole(role);
+        membership.setInvitedAt(LocalDateTime.now());
+        membership.setJoinedAt(null);
+
+        return membershipRepository.save(membership);
+    }
+
     public void deleteMembership(Long membershipId) {
         // Probably need to check for authorities first
         membershipRepository.deleteById(membershipId);
@@ -66,6 +108,13 @@ public class MembershipService {
         return membershipRepository
             .findByStableIdAndMembershipRole(stableId, MembershipRole.OWNER)
             .map(membership -> membership.getUser().getUsername())
+            .orElse("Unknown Owner"); 
+    }
+
+    public String getStableOwnerEmail(Long stableId) {
+        return membershipRepository
+            .findByStableIdAndMembershipRole(stableId, MembershipRole.OWNER)
+            .map(membership -> membership.getUser().getEmail())
             .orElse("Unknown Owner"); 
     }
 

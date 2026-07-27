@@ -3,6 +3,8 @@ package com.starace.stable_manager.controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.starace.stable_manager.dto.StableAcceptRequest;
+import com.starace.stable_manager.dto.StableInviteRequest;
 import com.starace.stable_manager.dto.StableRequest;
 import com.starace.stable_manager.service.StableService;
 
@@ -50,6 +52,22 @@ public class StableController {
         stableService.deleteStable(id);
         return ResponseEntity.ok("Stable deleted successfully");
     }
+    
+    @PostMapping("/invites/{stableId}")
+    public ResponseEntity<?> sendStableInvite(@PathVariable Long stableId, @RequestBody StableInviteRequest request) {
+        stableService.sendStableInvite(stableId, request);
+        return ResponseEntity.ok("Invite Sent");
+    }
 
+    // Maybe in users or invite controller?
+    @GetMapping("/invites/me")
+    public ResponseEntity<?> getAllUserInvites() {
+        return ResponseEntity.ok(stableService.getAllUserInvites());
+    }
 
+    @PutMapping("/invites/{stableId}/accept")
+    public ResponseEntity<?> acceptStableInvite(@PathVariable Long stableId, @RequestBody StableAcceptRequest request) {
+        stableService.acceptStableInvite(stableId, request);
+        return ResponseEntity.ok("Invite processed");
+    }
 }

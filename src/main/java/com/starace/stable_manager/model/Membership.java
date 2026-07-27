@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.starace.stable_manager.enums.MembershipRole;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -48,8 +49,10 @@ public class Membership {
     @Enumerated(EnumType.STRING)
     private MembershipRole membershipRole;
 
+    @Nullable
     private LocalDateTime joinedAt;
+
     private LocalDateTime invitedAt;
-    private boolean acceptedInvite;
+    private Boolean acceptedInvite;
     private Long invitedBy;
 }
