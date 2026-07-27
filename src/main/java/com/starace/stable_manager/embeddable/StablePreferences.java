@@ -8,5 +8,5 @@ import lombok.Data;
 public class StablePreferences {
     private int overdueCogginsDays;
     private int overdueFarrierDays;
-    private boolean emailNotification;
+    private Boolean emailNotification;
 }

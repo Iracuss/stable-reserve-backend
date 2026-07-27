@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.Entity;
 
 import jakarta.persistence.GeneratedValue;
@@ -34,7 +35,10 @@ public class Horse {
 
     private Boolean isMdBred;
     private String foalingState; // Where was the horse born, technically not needed but nice to have and track
+
+    @Nullable
     private LocalDate lastCogginDate; // Need to check every 12 months
+    @Nullable
     private LocalDate lastFarrierDate; // Need to check every 6 weeks since its standard
 
     private String medicalNotes; // Just in case

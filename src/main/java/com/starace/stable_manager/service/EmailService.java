@@ -23,13 +23,13 @@ public class EmailService {
     private String senderEmail;
 
     @Async
-    public void sendOverdueEmail(String to, List<HorseAlert> alertMessage) {
+    public void sendOverdueEmail(String to, List<HorseAlert> alertMessage, String stableName) {
         SimpleMailMessage message = new SimpleMailMessage();
-        String textMessage = formatOverdueEmail(alertMessage);
+        String textMessage = "The horses you have overdue are:\n" + formatOverdueEmail(alertMessage);
 
         message.setFrom(senderEmail);
         message.setTo(to);
-        message.setSubject("You have horses overdue for appointments");
+        message.setSubject("You have horses in " + stableName + " overdue for appointments.");
         message.setText(textMessage);
 
         mailSender.send(message);

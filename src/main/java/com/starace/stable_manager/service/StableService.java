@@ -148,6 +148,7 @@ public class StableService {
                 Long stableId = membership.getStable().getId();
                 response.setStableId(stableId);
                 response.setStableName(membership.getStable().getName());
+                response.setStableRole(membership.getMembershipRole());
 
                 String name = membershipService.getStableOwnerUsername(stableId);
                 response.setStableOwner(name);
