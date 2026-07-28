@@ -61,6 +61,18 @@ public class MembershipService {
         return membershipRepository.findByUser(currentUser);
     }
 
+    public void kickUserFromStable(Long userId, Long stableId) {
+        Optional<Membership> optMembership = membershipRepository.findByUserIdAndStableId(userId, stableId);
+
+        if(optMembership.isEmpty()) {
+            throw new RuntimeException("Membership does not exist");
+        }
+        
+        Membership membership = optMembership.get();
+
+        membershipRepository.delete(membership);
+    }
+
     // Creating through creation of stable
     public Membership createOwnerMembership(Long stableId) {
         User currentUser = currentUserService.getCurrentUser();

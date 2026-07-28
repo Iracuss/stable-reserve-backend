@@ -12,6 +12,7 @@ import com.starace.stable_manager.dto.StableInviteGetResponse;
 import com.starace.stable_manager.dto.StableInviteRequest;
 import com.starace.stable_manager.dto.StableRequest;
 import com.starace.stable_manager.dto.StableResponse;
+import com.starace.stable_manager.dto.UserInStableResponse;
 import com.starace.stable_manager.enums.MembershipRole;
 import com.starace.stable_manager.model.Membership;
 import com.starace.stable_manager.model.Stable;
@@ -138,6 +139,37 @@ public class StableService {
         stableRepository.deleteById(stableId);
     }
     
+    public List<UserInStableResponse> getAllUsersInStable(Long stableId) {
+        List<UserInStableResponse> responses = new ArrayList<>();
+
+        Optional<Stable> optStable = stableRepository.findById(stableId);
+
+        if(optStable.isEmpty()) {
+            throw new RuntimeException("No stable exists with id: " + stableId);
+        }
+
+        Stable stable = optStable.get();
+
+        if(!membershipService.checkMembershipStatus(stableId)) {
+            throw new RuntimeException("User is not a member of this stable");
+        }
+
+        List<Membership> memberships = stable.getMemberships();
+
+        for(Membership membership : memberships) {
+            UserInStableResponse response = new UserInStableResponse();
+
+            response.setUserId(membership.getUser().getId());
+            response.setUsername(membership.getUser().getUsername());
+            response.setEmail(membership.getUser().getEmail());
+            response.setRole(membership.getMembershipRole());
+
+            responses.add(response);
+        }
+
+        return responses;
+    }
+
     public List<StableInviteGetResponse> getAllUserInvites() {
         List<StableInviteGetResponse> responses = new ArrayList<>();
 
@@ -192,6 +224,21 @@ public class StableService {
         } else {
             membershipService.deleteMembership(currentUserId, stableId);
         }
+    }
+
+    public void kickUserFromStable(Long userId, Long stableId) {
+        Optional<Stable> optStable = stableRepository.findById(stableId);
+
+        if(optStable.isEmpty()) {
+            throw new RuntimeException("No stable exists with id: " + stableId);
+        }
+
+        // Check if member of stable and owner/manager
+        if(!membershipService.checkEditMembershipStatus(stableId)) {
+            throw new RuntimeException("User is not a owner/staff or member of this stable");
+        }
+
+        membershipService.kickUserFromStable(userId, stableId);
     }
 
     // public void sendStableInvite(Long stableId, StableInviteRequest request) {

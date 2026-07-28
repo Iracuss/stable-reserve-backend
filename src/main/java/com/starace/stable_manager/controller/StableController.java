@@ -65,9 +65,20 @@ public class StableController {
         return ResponseEntity.ok(stableService.getAllUserInvites());
     }
 
+    @GetMapping("/{stableId}/all")
+    public ResponseEntity<?> getAllUsersInStable(@PathVariable Long stableId) {
+        return ResponseEntity.ok(stableService.getAllUsersInStable(stableId));
+    }
+
     @PutMapping("/invites/{stableId}/accept")
     public ResponseEntity<?> acceptStableInvite(@PathVariable Long stableId, @RequestBody StableAcceptRequest request) {
         stableService.acceptStableInvite(stableId, request);
         return ResponseEntity.ok("Invite processed");
+    }
+
+    @DeleteMapping("kick/{userId}/{stableId}")
+    public ResponseEntity<?> kickUser(@PathVariable Long userId, @PathVariable Long stableId) {
+        stableService.kickUserFromStable(userId, stableId);
+        return ResponseEntity.ok("User kicked successfully");
     }
 }
